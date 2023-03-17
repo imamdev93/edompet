@@ -50,6 +50,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Run composer install to install the dependencies
 RUN composer install --no-cache --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
+RUN composer require laravel/octane
 
 # Expose the port app is reachable on
 EXPOSE 80
