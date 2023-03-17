@@ -1,0 +1,29 @@
+version: "3.5"
+
+services:
+  edompet_app:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    container_name: "edompet_app"
+    ports:
+      - "8000:80"
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    platform: linux/x86_64
+    tty: true
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_NAME: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
