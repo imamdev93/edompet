@@ -38,8 +38,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if (count($category->transactions) > 0)
-                                        @foreach ($category->transactions as $history)
+                                    @if (count($category->transactionDetail) > 0)
+                                        @foreach ($category->transactionDetail as $history)
                                             <tr>
                                                 <td>#</td>
                                                 <td><a href="#">{{ $history->wallet->name ?: null }}</a></td>

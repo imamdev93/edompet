@@ -19,7 +19,12 @@ class Category extends Model
 
     public function transactions()
     {
-        return $this->belongsToMany(Transaction::class, 'category_transactions')->orderByDesc('created_at')->groupBy('wallet_id')->select(DB::raw('sum(amount) as total'), 'wallet_id');
+        return $this->belongsToMany(Transaction::class, 'category_transactions');
+    }
+
+    public function transactionDetail()
+    {
+        return $this->transactions()->orderByDesc('created_at')->groupBy('wallet_id')->select(DB::raw('sum(amount) as total'), 'wallet_id');
     }
 
     public function countTransaction($date, $type)

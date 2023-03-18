@@ -54,7 +54,6 @@ trait DashboardTrait
     private function getValue($payloads, $label, $request)
     {
         $value = [];
-
         foreach ($payloads as $payload) {
             $data = $this->queryValues($payload, $label, $request);
             array_push($value, array('name' => $payload->name, 'color' => '#' . $payload->color, 'data' => $data));
