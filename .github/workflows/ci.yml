@@ -1,0 +1,45 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_USER: imamdev
+          MYSQL_PASSWORD: Imam29121993
+          MYSQL_DATABASE: edompet_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+           --health-interval=10s
+           --health-timeout=5s
+           --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and test Laravel application
+        run: |
+          docker-compose up -d
+        env:
+          DB_HOST: mysql
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: edompet_app:latest
+        secrets:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
