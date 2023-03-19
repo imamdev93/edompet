@@ -20,4 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('set-webhook', [BotTelegramController::class, 'setWebhook']);
-Route::post('ifdompet_bot/webhook', [BotTelegramController::class, 'handlerWebhook']);
+Route::post('ifdompet_bot/webhook', [BotTelegramController::class, 'getWebhookBot']);

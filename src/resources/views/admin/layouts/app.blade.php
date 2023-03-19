@@ -23,7 +23,9 @@
 
     <link href="{{ asset('admin/css/plugins/select2/select2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('admin/css/plugins/select2/select2-bootstrap4.min.css') }}" rel="stylesheet">
+    <link rel="shortcut icon" href="{{ asset('icon.png') }}" type="image/x-icon">
     @stack('styles')
+    @livewireStyles
 </head>
 
 <body>
@@ -568,6 +570,7 @@
     <script src="{{ asset('admin/js/plugins/toastr/toastr.min.js') }}"></script>
 
     <script src="{{ asset('admin/js/plugins/select2/select2.full.min.js') }}"></script>
+    @livewireScripts
     @stack('scripts')
     <script>
         $(document).ready(function() {

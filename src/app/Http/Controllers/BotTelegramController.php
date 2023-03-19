@@ -15,7 +15,7 @@ class BotTelegramController extends Controller
         $bot = Telegram::setWebhook(['url' => config('telegram.bots.mybot.webhook_url')]);
     }
 
-    public function handlerWebhook()
+    public function getWebhookBot()
     {
         $update =  Telegram::commandsHandler(true);
         $chatId = $update->getChat()->getId();

@@ -1,69 +1,11 @@
 @extends('admin.layouts.app')
 
 @section('content')
-<div class="row">
-    @include('admin.notification')
-    @include('admin.category.create')
-    <div class="col-lg-12">
-        <div class="ibox ">
-            <div class="ibox-title">
-                <h5>Category List</h5>
-                <div class="ibox-tools">
-                    <a class="collapse-link">
-                        <i class="fa fa-chevron-up"></i>
-                    </a>
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        <i class="fa fa-wrench"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-user">
-                        <li><a href="#" class="dropdown-item">Config option 1</a>
-                        </li>
-                        <li><a href="#" class="dropdown-item">Config option 2</a>
-                        </li>
-                    </ul>
-                    <a class="close-link">
-                        <i class="fa fa-times"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="ibox-content table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th width="5%">#</th>
-                            <th width="30%">Nama Kategori</th>
-                            <th width="20%">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if(count($categories) > 0)
-                        @foreach ($categories as $category)
-                        <tr>
-                            <td>#</td>
-                            <td>{{ $category->name }}</td>
-                            <td>
-                                <form method="POST" action="{{ route('category.destroy', $category->id) }}">
-                                    @method('DELETE')
-                                    @csrf
-                                    <a class="btn btn-sm btn-secondary" href="{{ route('category.show', $category->id)}}"><i class="fa fa-eye"></i></a>
-                                    <a class="btn btn-sm btn-primary" href="{{ route('category.edit', $category->id)}}"><i class="fa fa-edit"></i></a>
-                                    <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                        @endforeach
-                        @else
-                        <tr>
-                            <td colspan="4" class="text-center">Data tidak ditemukan</td>
-                        </tr>
-                        @endif
-                    </tbody>
-                </table>
-                {{ $categories->links() }}
-            </div>
+    <div class="row">
+        @include('admin.notification')
+        @include('admin.category.create')
+        <div class="col-lg-12">
+            @livewire('category-index')
         </div>
     </div>
-</div>
-
-
 @endsection
