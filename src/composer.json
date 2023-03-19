@@ -12,6 +12,7 @@
         "laravel/sanctum": "^2.14.1",
         "laravel/tinker": "^2.7",
         "livewire/livewire": "^2.12",
+        "opcodesio/log-viewer": "^2.3",
         "spatie/laravel-enum": "^3.0"
     },
     "require-dev": {
