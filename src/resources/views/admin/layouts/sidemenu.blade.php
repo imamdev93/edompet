@@ -20,28 +20,39 @@
             </div>
         </li>
         <li class="{{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
-            <a href="{{ route('admin.dashboard') }}"><i class="fa fa-dashboard"></i> <span class="nav-label">Dashboard</span></a>
+            <a href="{{ route('admin.dashboard') }}"><i class="fa fa-dashboard"></i> <span
+                    class="nav-label">Dashboard</span></a>
         </li>
         <li class="{{ Request::routeIs('user.*') ? 'active' : '' }}">
             <a href="{{ route('user.index') }}"><i class="fa fa-users"></i> <span class="nav-label">User</span></a>
         </li>
         <li class="{{ Request::routeIs('category.*') ? 'active' : '' }}">
-            <a href="{{ route('category.index') }}"><i class="fa fa-list"></i> <span class="nav-label">Kategori</span></a>
+            <a href="{{ route('category.index') }}"><i class="fa fa-list"></i> <span
+                    class="nav-label">Kategori</span></a>
         </li>
         <li class="{{ Request::routeIs('wallet.*') ? 'active' : '' }}">
-            <a href="{{ route('wallet.index') }}"><i class="fa fa-credit-card"></i> <span class="nav-label">Dompet</span></a>
+            <a href="{{ route('wallet.index') }}"><i class="fa fa-credit-card"></i> <span
+                    class="nav-label">Dompet</span></a>
         </li>
         <li class="{{ Request::routeIs('transaction.*') ? 'active' : '' }}">
-            <a href="{{ route('transaction.index') }}"><i class="fa fa-shopping-cart"></i> <span class="nav-label">Transaksi</span></a>
+            <a href="{{ route('transaction.index') }}"><i class="fa fa-shopping-cart"></i> <span
+                    class="nav-label">Transaksi</span></a>
         </li>
         <li class="{{ Request::routeIs('transfer.*') ? 'active' : '' }}">
-            <a href="{{ route('transfer.index') }}"><i class="fa fa-money"></i> <span class="nav-label">Transfer</span></a>
+            <a href="{{ route('transfer.index') }}"><i class="fa fa-money"></i> <span
+                    class="nav-label">Transfer</span></a>
         </li>
         <li class="{{ Request::routeIs('payable.*') ? 'active' : '' }}">
-            <a href="{{ route('payable.index') }}"><i class="fa fa-money"></i> <span class="nav-label">Hutang</span></a>
+            <a href="{{ route('payable.index') }}"><i class="fa fa-money"></i> <span
+                    class="nav-label">Hutang</span></a>
         </li>
         <li class="{{ Request::routeIs('receivable.*') ? 'active' : '' }}">
-            <a href="{{ route('receivable.index') }}"><i class="fa fa-money"></i> <span class="nav-label">Piutang</span></a>
+            <a href="{{ route('receivable.index') }}"><i class="fa fa-money"></i> <span
+                    class="nav-label">Piutang</span></a>
+        </li>
+        <li class="">
+            <a href="/admin/log-viewer" target="_blank"><i class="fa fa-history"></i> <span class="nav-label">Log
+                    Viewer</span></a>
         </li>
     </ul>
 
