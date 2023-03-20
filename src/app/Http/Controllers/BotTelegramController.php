@@ -79,7 +79,7 @@ class BotTelegramController extends Controller
                     ]);
                     $this->sendMessage($chatId, $this->unicodeToUtf8($success, ' Kategori berhasil dibuat'));
                 } catch (Exception $e) {
-                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Kategori gagal dibuat'));
+                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed, $e->getMessage()));
                 }
                 break;
             case '/transaksi':
@@ -112,10 +112,10 @@ class BotTelegramController extends Controller
                     $transaction->categories()->attach($category->id);
                     $this->updateWalletBalance($transaction->wallet, $transaction->amount, $transaction->type, $transaction->note);
                     DB::commit();
-                    $this->sendMessage($chatId, 'Kategori berhasil dibuat');
+                    $this->sendMessage($chatId, $this->unicodeToUtf8($success, 'Transaksi berhasil dibuat'));
                 } catch (Exception $e) {
                     DB::rollBack();
-                    $this->sendMessage($chatId, 'Kategori gagal dibuat');
+                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed, $e->getMessage()));
                 }
                 break;
             case '/reload':
