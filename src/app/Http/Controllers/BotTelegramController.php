@@ -8,9 +8,12 @@ use App\Models\Wallet;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Telegram\Bot\Laravel\Facades\Telegram;
+use App\Traits\TransactionTrait;
 
 class BotTelegramController extends Controller
 {
+    use TransactionTrait;
+
     public function setWebhook()
     {
         $bot = Telegram::setWebhook(['url' => config('telegram.bots.mybot.webhook_url')]);
@@ -86,7 +89,7 @@ class BotTelegramController extends Controller
                 $replyMessage = explode('#', $update->getMessage()->getText());
 
                 if (empty($replyMessage[1])) {
-                    $this->sendMessage($chatId, 'Format Transaksi salah. /transaksi #dompet #kategori #uang #tipe_transaksi');
+                    $this->sendMessage($chatId, 'Format Transaksi salah. /transaksi #dompet #kategori #uang #tipe_transaksi #catatan');
                     break;
                 }
 

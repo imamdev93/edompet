@@ -33,11 +33,11 @@ class Transaction extends Model
         parent::boot();
 
         static::creating(function (Transaction $transaction) {
-            $transaction->created_by = auth()->user()->id;
+            $transaction->created_by = auth()->user()->id ?? User::first()->id;
         });
 
         static::updating(function (Transaction $transaction) {
-            $transaction->updated_by = auth()->user()->id;
+            $transaction->updated_by = auth()->user()->id ?? User::first()->id;
         });
     }
 }
