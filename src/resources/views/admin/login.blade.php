@@ -22,6 +22,7 @@
             background-size: cover;
         }
     </style>
+     {!! ReCaptcha::htmlScriptTagJsApi() !!}
 </head>
 
 <body>
@@ -39,7 +40,7 @@
             </p> --}}
             <p style="color: white
             "></p>
-            <form class="m-t" role="form" action="{{ route('admin.doLogin') }}" method="POST">
+            <form class="m-t" role="form" action="{{ route('admin.doLogin') }}" method="POST" id="{{ getFormId() }}">
                 @csrf
                 <div class="form-group">
                     <input type="email" name="email" class="form-control" placeholder="Email" required="">
@@ -47,7 +48,7 @@
                 <div class="form-group">
                     <input type="password" name="password" class="form-control" placeholder="Password" required="">
                 </div>
-                <button type="submit" class="btn btn-warning block full-width m-b">Login</button>
+                {!! htmlFormButton('Login', ['class' => 'btn btn-warning block full-width m-b']) !!}
 
                 {{-- <a href="#"><small>Forgot password?</small></a>
                 <p class="text-muted text-center"><small>Do not have an account?</small></p>

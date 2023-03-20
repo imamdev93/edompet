@@ -19,7 +19,7 @@ class AuthController extends Controller
     public function doLogin(LoginRequest $request)
     {
         try {
-            if (! Auth::attempt($request->validated())) {
+            if (! Auth::attempt($request->only('email', 'password'))) {
                 return redirect()->route('admin.login')->with('error', 'Username dan password salah');
             }
 
