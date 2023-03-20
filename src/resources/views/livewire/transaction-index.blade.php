@@ -63,11 +63,12 @@
             <thead>
                 <tr>
                     <th width="5%">#</th>
-                    <th width="20%">Dompet</th>
+                    <th width="15%">Dompet</th>
                     <th width="15%">Jumlah</th>
                     <th width="25%">Catatan</th>
                     <th width="10%">Tipe</th>
-                    <th width="25%">Aksi</th>
+                    <th width="15%">Tanggal</th>
+                    <th width="15%">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -85,6 +86,7 @@
                                     <span class="badge badge-danger">{{ $transaction->type }}</span>
                                 @endif
                             </td>
+                            <td>{{ \Carbon\Carbon::parse($transaction->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i') }}</td>
                             <td>
                                 <form method="POST" action="{{ route('transaction.destroy', $transaction->id) }}">
                                     @method('DELETE')
@@ -95,7 +97,7 @@
                                     <a class="btn btn-sm btn-primary"
                                         href="{{ route('transaction.edit', $transaction->id) }}"><i
                                             class="fa fa-edit"></i></a>
-                                    <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                                    {{-- <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button> --}}
                                 </form>
                             </td>
                         </tr>

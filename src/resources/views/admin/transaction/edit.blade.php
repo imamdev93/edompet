@@ -31,14 +31,14 @@
                         <div class="form-group row">
                             <label class="col-lg-2 col-form-label">Jumlah Sebelumnya</label>
                             <div class="col-lg-10">
-                                <input type="text" placeholder="Jumlah Sebelumnya" class="form-control"
+                                <input type="text" placeholder="Jumlah Sebelumnya" class="form-control" name="old_amount"
                                     value="{{ $transaction->amount }}" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-2 col-form-label">Jumlah Seharusnya</label>
                             <div class="col-lg-10">
-                                <input type="number" placeholder="Jumlah Seharusnya" class="form-control"
+                                <input type="number" placeholder="Jumlah Seharusnya" class="form-control" name="amount"
                                     value="{{ old('amount') }}">
                                 @error('amount')
                                     <span class="form-text m-b-none text-danger">{{ $errors->first('amount') }}</span>
@@ -68,6 +68,24 @@
                                 </select>
                                 @error('type')
                                     <span class="form-text m-b-none text-danger">{{ $errors->first('type') }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-2 col-form-label">Kategori Transaksi</label>
+                            <div class="col-lg-10">
+                                <select name="category_id" id="" class="select2_demo_3 form-control">
+                                    <option value="">Pilih</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}"
+                                            {{ old('category_id', $transaction->categories()->first()?->id) == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+
+                                </select>
+                                @error('category_id')
+                                    <span class="form-text m-b-none text-danger">{{ $errors->first('category_id') }}</span>
                                 @enderror
                             </div>
                         </div>

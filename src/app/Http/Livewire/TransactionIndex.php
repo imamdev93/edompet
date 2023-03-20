@@ -39,7 +39,7 @@ class TransactionIndex extends Component
             $query->where('wallet_id', $this->wallet_id);
         })->when($this->start_date && $this->end_date, function ($query) {
             $query->whereBetween(DB::raw('date_format(created_at,"%Y-%m-%d")'), [$this->start_date, $this->end_date]);
-        });
+        })->orderByDesc('created_at');
     }
 
     public function updatingSearch()

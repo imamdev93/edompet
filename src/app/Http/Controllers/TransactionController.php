@@ -6,6 +6,7 @@ use App\Http\Requests\TransactionRequest;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\Wallet;
+use App\Models\WalletHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\TransactionTrait;
@@ -79,7 +80,8 @@ class TransactionController extends Controller
      */
     public function edit(Transaction $transaction)
     {
-        return view('admin.transaction.edit', compact('transaction'));
+        $categories = Category::orderBy('name', 'asc')->get();
+        return view('admin.transaction.edit', compact('transaction', 'categories'));
     }
 
     /**
@@ -91,7 +93,32 @@ class TransactionController extends Controller
      */
     public function update(Request $request, Transaction $transaction)
     {
-        //
+        DB::beginTransaction();
+        try {
+            if($transaction->amount != $request->amount){
+                $transaction->categories()->detach(); // hapus transaksi category
+                $wallet = Wallet::find($request->wallet_id); // mengambil data dompet
+                $wallet->increment('balance', $request->old_amount); // mengembalikan uang pada trannsaksi ke dompet
+
+                $wallet->histories()->where('wallet_id', $wallet->id)->where('type', $transaction->type)
+                                                ->where('amount', $transaction->amount)->update([
+                                                    'amount' => $request->amount,
+                                                    'note' => $request->note
+                                                ]); // update history transaksi
+                $transaction->update([
+                            'amount' => $request->amount
+                            ]); // update amount transaksi
+                $transaction->categories()->attach($request->category_id);
+                $wallet->decrement('balance', $request->amount); // update balance dompet
+            }
+
+            DB::commit();
+
+            return redirect()->route('transaction.index')->with('success', 'Transaksi Berhasil dibuat');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**
