@@ -61,12 +61,14 @@ class BotTelegramController extends Controller
             case '/kategori':
                 if (empty($getCommand[1])) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Masukan nama kategori ( /kategori #nama #kode_warna )'));
+                    break;
                 }
                 $replyMessage = explode('#', $update->getMessage()->getText());
 
                 $category = Category::where('name', $replyMessage[1])->first();
                 if ($category) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Kategori sudah digunakan'));
+                    break;
                 }
 
                 try {
@@ -84,16 +86,19 @@ class BotTelegramController extends Controller
 
                 if (empty($replyMessage[1])) {
                     $this->sendMessage($chatId, 'Format Transaksi salah. /transaksi #dompet #kategori #uang #tipe_transaksi');
+                    break;
                 }
 
                 $wallet = Wallet::where('name', $replyMessage[1])->first();
                 if (!$wallet) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
+                    break;
                 }
 
                 $category = Category::where('name', $replyMessage[2])->first();
                 if (!$category) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Kategori tidak ada gaes'));
+                    break;
                 }
                 DB::beginTransaction();
                 try {
