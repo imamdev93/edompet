@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use App\Traits\TransactionTrait;
+use Str;
 
 class BotTelegramController extends Controller
 {
@@ -77,8 +78,8 @@ class BotTelegramController extends Controller
 
                 try {
                     Category::create([
-                        'name' => $replyMessage[1],
-                        'color' => $replyMessage[2] ?? null,
+                        'name' => Str::slug($replyMessage[1], ' '),
+                        'color' => Str::slug($replyMessage[2] ?? null,' ') ,
                     ]);
                     $this->sendMessage($chatId, $this->unicodeToUtf8($success, ' Kategori berhasil dibuat'));
                 } catch (Exception $e) {
@@ -93,13 +94,13 @@ class BotTelegramController extends Controller
                     break;
                 }
 
-                $wallet = Wallet::where('name', $replyMessage[1])->first();
+                $wallet = Wallet::where('name', Str::slug($replyMessage[1],' '))->first();
                 if (!$wallet) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
                     break;
                 }
 
-                $category = Category::where('name', $replyMessage[2])->first();
+                $category = Category::where('name', Str::slug($replyMessage[2],' '))->first();
                 if (!$category) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Kategori tidak ada gaes'));
                     break;
@@ -108,9 +109,9 @@ class BotTelegramController extends Controller
                 try {
                     $transaction = Transaction::create([
                         'wallet_id' => $wallet->id,
-                        'amount' => $replyMessage[3],
-                        'type' => $replyMessage[4],
-                        'note' => $replyMessage[5] ?? null,
+                        'amount' => Str::slug($replyMessage[3], ' '),
+                        'type' => Str::slug($replyMessage[4], ' '),
+                        'note' => Str::slug($replyMessage[5], ' '),
                     ]);
                     $transaction->categories()->attach($category->id);
                     $this->updateWalletBalance($transaction->wallet, $transaction->amount, $transaction->type, $transaction->note);
