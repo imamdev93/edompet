@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Transaction;
 use App\Models\Wallet;
 use Exception;
 use Illuminate\Support\Facades\DB;
