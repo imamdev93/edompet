@@ -56,6 +56,7 @@ class BotTelegramController extends Controller
                     'listdompet' => 'Daftar Dompet',
                     'kategori' => 'Command membuat kategori baru',
                     'transaksi' => 'Command membuat transaksi baru',
+                    'laporan' => 'Command untuk melihat transaksi',
                     'reload' => 'Jika Ada Kendala, pakai aku yaa!'
                 ];
                 $messages = '';
@@ -77,7 +78,7 @@ class BotTelegramController extends Controller
                 $messages = '';
                 foreach ($wallets as $value) {
 
-                    $messages .= $this->formatText('- %s  =>  Rp. %s ' . PHP_EOL, $value->name, number_format($value->balance, 0, ".", '.'));
+                    $messages .= $this->formatText('- %s  =  Rp. %s ' . PHP_EOL, $value->name, number_format($value->balance, 0, ".", '.'));
                 }
                 $this->sendMessage($chatId, $messages);
                 break;
@@ -112,17 +113,20 @@ class BotTelegramController extends Controller
                     break;
                 }
 
-                $wallet = Wallet::where('name', Str::slug($replyMessage[1],' '))->first();
+                $wallet = $this->getWallet($replyMessage[1]);
+
                 if (!$wallet) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
                     break;
                 }
 
-                $category = Category::where('name', Str::slug($replyMessage[2],' '))->first();
+                $category = $this->getCategory($replyMessage[2]);
+
                 if (!$category) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Kategori tidak ada gaes'));
                     break;
                 }
+
                 DB::beginTransaction();
                 try {
                     $transaction = Transaction::create([
@@ -131,22 +135,58 @@ class BotTelegramController extends Controller
                         'type' => Str::slug($replyMessage[4], ' '),
                         'note' => Str::slug($replyMessage[5], ' '),
                     ]);
+
                     $transaction->categories()->attach($category->id);
                     $this->updateWalletBalance($transaction->wallet, $transaction->amount, $transaction->type, $transaction->note);
                     DB::commit();
+
                     $this->sendMessage($chatId, $this->unicodeToUtf8($success, 'Transaksi berhasil dibuat'));
                 } catch (Exception $e) {
                     DB::rollBack();
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, $e->getMessage()));
                 }
                 break;
+            case '/laporan':
+                    $replyMessage = explode('#', $text);
+                    if (empty($replyMessage[1])) {
+                        $this->sendMessage($chatId, 'Format Laporan salah. /laporan #dompet #tanggal(optional Y-m-d) #tipe_transaksi(default:pengeluaran)');
+                        break;
+                    }
+
+                    $date = $replyMessage[2] ?? date('Y-m-d');
+                    $type = $replyMessage[3] ?? 'pengeluaran';
+
+                    // $response = "<b> Laporan Transaksi Dompet {$replyMessage[1]} Tanggal {$date} ( {$type} )</b>";
+
+                    $wallet = $this->getWallet($replyMessage[1]);
+
+                    if (!$wallet) {
+                        $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
+                        break;
+                    }
+
+                    $transactions = $this->getTransaction($wallet->id, $date, $type);
+                    $response = $this->formatText('%s'.PHP_EOL,"<b> Laporan Transaksi Dompet {$wallet->name} Tanggal {$date} ( {$type} ) </b>");
+
+                    if(count($transactions) > 0 ){
+                        foreach ($transactions as $key => $value) {
+                            $no = $key+1;
+                            $response .= $this->formatText("$no. Rp %s ( %s )" . PHP_EOL, number_format($value->amount, 0, ".", '.'),$value->note);
+                        }
+                        $this->sendMessage($chatId,  $response);
+                        break;
+                    }
+
+                    $response .= '<b> Tidak Ditemukan </b>';
+                    $this->sendMessage($chatId,  $this->unicodeToUtf8($failed,$response));
+                    break;
             case '/reload':
                 $this->setWebhook();
                 $this->sendMessage($chatId,  $this->unicodeToUtf8($success, ' reload success'));
 
                 break;
             default:
-                $this->sendMessage($chatId,  $this->unicodeToUtf8($failed, $getCommand[0]));
+                $this->sendMessage($chatId,  $this->unicodeToUtf8($failed, ' Ups Command tidak ada'));
                 break;
         }
     }
@@ -155,7 +195,8 @@ class BotTelegramController extends Controller
     {
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text' => $message
+            'text' => $message,
+            'parse_mode' => 'html'
         ]);
     }
 
@@ -177,5 +218,20 @@ class BotTelegramController extends Controller
     public function formatText($format, $message1, $message2 = null)
     {
         return sprintf($format, $message1, $message2);
+    }
+
+    public function getWallet($name)
+    {
+        return Wallet::where('name', Str::slug($name,' '))->first();
+    }
+
+    public function getCategory($name)
+    {
+        return Category::where('name', Str::slug($name,' '))->first();
+    }
+
+    public function getTransaction($wallet_id, $date, $tipe)
+    {
+        return Transaction::where('wallet_id', $wallet_id)->whereDate('created_at', $date)->where('type', $tipe)->get();
     }
 }
