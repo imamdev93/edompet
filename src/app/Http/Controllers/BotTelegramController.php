@@ -156,8 +156,6 @@ class BotTelegramController extends Controller
                     $date = $replyMessage[2] ?? date('Y-m-d');
                     $type = $replyMessage[3] ?? 'pengeluaran';
 
-                    // $response = "<b> Laporan Transaksi Dompet {$replyMessage[1]} Tanggal {$date} ( {$type} )</b>";
-
                     $wallet = $this->getWallet($replyMessage[1]);
 
                     if (!$wallet) {
@@ -177,8 +175,8 @@ class BotTelegramController extends Controller
                         break;
                     }
 
-                    $response .= '<b> Tidak Ditemukan </b>';
-                    $this->sendMessage($chatId,  $this->unicodeToUtf8($failed,$response));
+                    $response .= $this->formatText('%s'.PHP_EOL,'<b> Tidak Ditemukan </b>');
+                    $this->sendMessage($chatId,  $response);
                     break;
             case '/reload':
                 $this->setWebhook();
