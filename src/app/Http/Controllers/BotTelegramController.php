@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Models\Wallet;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -17,14 +18,31 @@ class BotTelegramController extends Controller
 
     public function setWebhook()
     {
-        $bot = Telegram::setWebhook(['url' => config('telegram.bots.mybot.webhook_url')]);
+        Telegram::setWebhook(['url' => config('telegram.bots.mybot.webhook_url')]);
     }
 
     public function getWebhookBot()
     {
-        $update =  Telegram::commandsHandler(true);
-        $chatId = $update->getChat()->getId();
-        $getCommand = explode(' ', $update->getMessage()->getText());
+        $webhook =  Telegram::commandsHandler(true);
+
+        $command = $webhook->getChat();
+        $getText = $webhook->getMessage()->getText();
+        $chatId = $command->getId();
+        $username = $command->getUsername();
+        $getCommand = explode(' ', $getText);
+        $success = '\u2705';
+        $failed = '\u274c';
+
+        $user = User::where('username', $username)->first();
+        if(!$user){
+            $this->sendMessage($chatId, $this->unicodeToUtf8($failed,' User tidak terdaftar'));
+        }else{
+            $this->authenticate($chatId, $getCommand, $getText);
+        }
+    }
+
+    public function authenticate($chatId, $getCommand, $text)
+    {
         $success = '\u2705';
         $failed = '\u274c';
 
@@ -68,7 +86,7 @@ class BotTelegramController extends Controller
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Masukan nama kategori ( /kategori #nama #kode_warna )'));
                     break;
                 }
-                $replyMessage = explode('#', $update->getMessage()->getText());
+                $replyMessage = explode('#', $text);
 
                 $category = Category::where('name', $replyMessage[1])->first();
                 if ($category) {
@@ -87,7 +105,7 @@ class BotTelegramController extends Controller
                 }
                 break;
             case '/transaksi':
-                $replyMessage = explode('#', $update->getMessage()->getText());
+                $replyMessage = explode('#', $text);
 
                 if (empty($replyMessage[1])) {
                     $this->sendMessage($chatId, 'Format Transaksi salah. /transaksi #dompet #kategori #uang #tipe_transaksi #catatan');
@@ -128,7 +146,7 @@ class BotTelegramController extends Controller
 
                 break;
             default:
-                $this->sendMessage($chatId,  $this->unicodeToUtf8($failed, ' Mohon maaf command yang kamu cari tidak ada.'));
+                $this->sendMessage($chatId,  $this->unicodeToUtf8($failed, $getCommand[0]));
                 break;
         }
     }
