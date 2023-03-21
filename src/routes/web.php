@@ -26,7 +26,7 @@ Route::get('/', function () {
     return redirect()->route('admin.login');
 });
 
-Route::prefix('admin')->group(function () {
+Route::prefix('e-dompet')->group(function () {
     Route::get('login', [AuthController::class, 'showFormLogin'])->name('admin.login');
     Route::post('login', [AuthController::class, 'doLogin'])->name('admin.doLogin');
 
