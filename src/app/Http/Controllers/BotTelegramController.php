@@ -52,11 +52,12 @@ class BotTelegramController extends Controller
                 break;
             case '/help':
                 $commands = [
-                    'listkategori' => 'Daftar Kategori',
-                    'listdompet' => 'Daftar Dompet',
+                    'listkategori' => 'Command Menampilkan Daftar Kategori',
+                    'listdompet' => 'Command Menampilkan Daftar Dompet',
+                    'ceksaldo' => 'Command Menampilkan Cek Saldo Dompet',
                     'kategori' => 'Command membuat kategori baru',
                     'transaksi' => 'Command membuat transaksi baru',
-                    'laporan' => 'Command untuk melihat transaksi',
+                    'laporan' => 'Command untuk melihat laporan transaksi',
                     'reload' => 'Jika Ada Kendala, pakai aku yaa!'
                 ];
                 $messages = '';
@@ -67,7 +68,7 @@ class BotTelegramController extends Controller
                 break;
             case '/listkategori':
                 $categories = Category::all();
-                $messages = '';
+                $messages = $this->formatText('<b> %s </b>'.PHP_EOL, 'List Katergori : ');
                 foreach ($categories as $value) {
                     $messages .= $this->formatText('- %s' . PHP_EOL, $value->name);
                 }
@@ -75,10 +76,10 @@ class BotTelegramController extends Controller
                 break;
             case '/listdompet':
                 $wallets = Wallet::orderByDesc('balance')->get();
-                $messages = '';
+                $messages = $this->formatText('<b> %s </b>'.PHP_EOL, 'List Dompet : ');
                 foreach ($wallets as $value) {
 
-                    $messages .= $this->formatText('- %s  =  Rp. %s ' . PHP_EOL, $value->name, number_format($value->balance, 0, ".", '.'));
+                    $messages .= $this->formatText('- %s' . PHP_EOL, $value->name);
                 }
                 $this->sendMessage($chatId, $messages);
                 break;
@@ -109,11 +110,11 @@ class BotTelegramController extends Controller
                 $replyMessage = explode('#', $text);
 
                 if (empty($replyMessage[1])) {
-                    $this->sendMessage($chatId, 'Format Transaksi salah. /transaksi #dompet #kategori #uang #tipe_transaksi #catatan');
+                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed,' Format Transaksi salah. /transaksi #dompet #kategori #uang #tipe_transaksi #catatan'));
                     break;
                 }
 
-                $wallet = $this->getWallet($replyMessage[1]);
+                $wallet = $this->getWallet(array(Str::slug($replyMessage[1],' ')));
 
                 if (!$wallet) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
@@ -130,7 +131,7 @@ class BotTelegramController extends Controller
                 DB::beginTransaction();
                 try {
                     $transaction = Transaction::create([
-                        'wallet_id' => $wallet->id,
+                        'wallet_id' => $wallet[0]->id,
                         'amount' => Str::slug($replyMessage[3], ' '),
                         'type' => Str::slug($replyMessage[4], ' '),
                         'note' => Str::slug($replyMessage[5], ' '),
@@ -148,28 +149,29 @@ class BotTelegramController extends Controller
                 break;
             case '/laporan':
                     $replyMessage = explode('#', $text);
-                    if (empty($replyMessage[1])) {
-                        $this->sendMessage($chatId, 'Format Laporan salah. /laporan #dompet #tanggal(optional Y-m-d) #tipe_transaksi(default:pengeluaran)');
-                        break;
-                    }
-
+                    // if (empty($replyMessage[1])) {
+                    //     $this->sendMessage($chatId, $this->unicodeToUtf8($failed,'Format Laporan salah. /laporan #dompet(opsional) #tanggal(optional Y-m-d) #tipe_transaksi(default:pengeluaran)'));
+                    //     break;
+                    // }
+                    $wallet_names = !empty($replyMessage[1]) && Str::slug($replyMessage[1],' ') != 'all' ? array(Str::slug($replyMessage[1],' ')) : Wallet::pluck('name')->toArray();
                     $date = $replyMessage[2] ?? date('Y-m-d');
                     $type = $replyMessage[3] ?? 'pengeluaran';
 
-                    $wallet = $this->getWallet($replyMessage[1]);
+                    $wallets = $this->getWallet($wallet_names);
 
-                    if (!$wallet) {
+                    if (count($wallets) == 0) {
                         $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
                         break;
                     }
 
-                    $transactions = $this->getTransaction($wallet->id, $date, $type);
-                    $response = $this->formatText('%s'.PHP_EOL,"<b> Laporan Transaksi Dompet {$wallet->name} Tanggal {$date} ( {$type} ) </b>");
+                    $transactions = $this->getTransaction($wallets->pluck('id')->toArray(), $date, $type);
+                    $wallet_name = count($wallets) > 1 ? 'All' : $wallets[0]->name;
+                    $response = $this->formatText('%s'.PHP_EOL,"<b> Laporan Transaksi {$wallet_name} Tanggal {$date} ( {$type} ) </b>");
 
                     if(count($transactions) > 0 ){
                         foreach ($transactions as $key => $value) {
                             $no = $key+1;
-                            $response .= $this->formatText("$no. Rp %s ( %s )" . PHP_EOL, number_format($value->amount, 0, ".", '.'),$value->note);
+                            $response .= $this->formatText("$no. Rp %s ( %s )" . PHP_EOL, number_format($value->amount, 0, ".", '.'),$value->wallet?->name);
                         }
                         $this->sendMessage($chatId,  $response);
                         break;
@@ -178,6 +180,25 @@ class BotTelegramController extends Controller
                     $response .= $this->formatText('%s'.PHP_EOL,'<b> Tidak Ditemukan </b>');
                     $this->sendMessage($chatId,  $response);
                     break;
+            case '/ceksaldo':
+                $replyMessage = explode('#', $text);
+
+                if (empty($replyMessage[1])) {
+                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Format Cek Saldo salah. /ceksaldo #nama_dompet'));
+                    break;
+                }
+
+                $wallet = $this->getWallet(array(Str::slug($replyMessage[1],' ')));
+
+                if (!$wallet) {
+                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
+                    break;
+                }
+
+                $saldo = number_format($wallet[0]->balance,0,'.','.');
+                $message = $this->unicodeToUtf8($success,"Saldo Dompet {$wallet[0]->name} Rp. {$saldo}");
+                $this->sendMessage($chatId, $message);
+                break;
             case '/reload':
                 $this->setWebhook();
                 $this->sendMessage($chatId,  $this->unicodeToUtf8($success, ' reload success'));
@@ -218,9 +239,9 @@ class BotTelegramController extends Controller
         return sprintf($format, $message1, $message2);
     }
 
-    public function getWallet($name)
+    public function getWallet($names)
     {
-        return Wallet::where('name', Str::slug($name,' '))->first();
+        return Wallet::whereIn('name', $names)->get();
     }
 
     public function getCategory($name)
@@ -228,8 +249,8 @@ class BotTelegramController extends Controller
         return Category::where('name', Str::slug($name,' '))->first();
     }
 
-    public function getTransaction($wallet_id, $date, $tipe)
+    public function getTransaction($wallet_ids, $date, $tipe)
     {
-        return Transaction::where('wallet_id', $wallet_id)->whereDate('created_at', $date)->where('type', $tipe)->get();
+        return Transaction::whereIn('wallet_id', $wallet_ids)->whereDate('created_at', $date)->where('type', $tipe)->get();
     }
 }
