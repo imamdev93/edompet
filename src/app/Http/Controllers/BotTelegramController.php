@@ -25,23 +25,29 @@ class BotTelegramController extends Controller
     {
         $webhook =  Telegram::commandsHandler(true);
 
+        $getUserGroup = $webhook->getMessage()->from->username;
         $command = $webhook->getChat();
         $getText = $webhook->getMessage()->getText();
         $chatId = $command->getId();
         $username = $command->getUsername();
         $getCommand = explode(' ', $getText);
-        $success = '\u2705';
         $failed = '\u274c';
+
+        $group = $command->type;
+
+        if($group == 'group'){
+            $username = $getUserGroup;
+        }
 
         $user = User::where('username', $username)->first();
         if(!$user){
             $this->sendMessage($chatId, $this->unicodeToUtf8($failed,' User tidak terdaftar'));
         }else{
-            $this->authenticate($chatId, $getCommand, $getText);
+            $this->authenticate($chatId, $getCommand, $getText, $getUserGroup);
         }
     }
 
-    public function authenticate($chatId, $getCommand, $text)
+    public function authenticate($chatId, $getCommand, $text, $command)
     {
         $success = '\u2705';
         $failed = '\u274c';
@@ -60,11 +66,39 @@ class BotTelegramController extends Controller
                     'laporan' => 'Command untuk melihat laporan transaksi',
                     'reload' => 'Jika Ada Kendala, pakai aku yaa!'
                 ];
-                $messages = '';
-                foreach ($commands as $key => $value) {
-                    $messages .= $this->formatText('/%s - %s' . PHP_EOL, $key, $value);
+
+                if(!empty($getCommand[1])){
+                    $response = $this->formatText('%s'.PHP_EOL,'<b>Cara menggunakan command : </b>');
+                    switch (Str::slug($getCommand[1],' ')) {
+
+                        case 'ceksaldo':
+                            $response .= $this->formatText('%s'.PHP_EOL,'<b>/ceksaldo # nama dompet (ex: Uang Dapur)</b>');
+                            $this->sendMessage($chatId, $response);
+                            break;
+                        case 'kategori':
+                            $response .= $this->formatText('%s'.PHP_EOL,'<b>/kategori # masukan nama kategori # kode warna (opsional)</b>');
+                            $this->sendMessage($chatId, $response);
+                            break;
+                        case 'transaksi':
+                            $response .= $this->formatText('%s'.PHP_EOL,'<b>/transaksi # nama dompet # nama kategori # jumlah uang dikeluarkan # tipe transaksi (pengeluaran/pemasukan) # note </b>');
+                            $this->sendMessage($chatId, $response);
+                            break;
+                        case 'laporan':
+                            $response .= $this->formatText('%s'.PHP_EOL,'<b>/laporan # nama dompet (all untuk semua dompet) # tanggal (all untuk semua tanggal) # tipe transaksi (pengeluaran/pemasukan) </b>');
+                            $this->sendMessage($chatId, $response);
+                            break;
+                        default:
+                            $this->sendMessage($chatId, '<b>help command tidak ditemukan </b>');
+                            break;
+                        break;
+                    }
+                }else{
+                    $messages = '';
+                    foreach ($commands as $key => $value) {
+                        $messages .= $this->formatText('/%s - %s' . PHP_EOL, $key, $value);
+                    }
+                    $this->sendMessage($chatId, $messages);
                 }
-                $this->sendMessage($chatId, $messages);
                 break;
             case '/listkategori':
                 $categories = Category::all();
@@ -149,10 +183,7 @@ class BotTelegramController extends Controller
                 break;
             case '/laporan':
                     $replyMessage = explode('#', $text);
-                    // if (empty($replyMessage[1])) {
-                    //     $this->sendMessage($chatId, $this->unicodeToUtf8($failed,'Format Laporan salah. /laporan #dompet(opsional) #tanggal(optional Y-m-d) #tipe_transaksi(default:pengeluaran)'));
-                    //     break;
-                    // }
+
                     $wallet_names = !empty($replyMessage[1]) && Str::slug($replyMessage[1],' ') != 'all' ? array(Str::slug($replyMessage[1],' ')) : Wallet::pluck('name')->toArray();
                     $date = $replyMessage[2] ?? date('Y-m-d');
                     $type = $replyMessage[3] ?? 'pengeluaran';
@@ -167,12 +198,14 @@ class BotTelegramController extends Controller
                     $transactions = $this->getTransaction($wallets->pluck('id')->toArray(), $date, $type);
                     $wallet_name = count($wallets) > 1 ? 'All' : $wallets[0]->name;
                     $response = $this->formatText('%s'.PHP_EOL,"<b> Laporan Transaksi {$wallet_name} Tanggal {$date} ( {$type} ) </b>");
-
+                    $response .= $this->formatText('%s'.PHP_EOL,'');
                     if(count($transactions) > 0 ){
                         foreach ($transactions as $key => $value) {
                             $no = $key+1;
-                            $response .= $this->formatText("$no. Rp %s ( %s )" . PHP_EOL, number_format($value->amount, 0, ".", '.'),$value->wallet?->name);
+                            $response .= $this->formatText("$no. Rp %s ( %s )" . PHP_EOL, number_format($value->amount, 0, ".", '.'),$wallet_name != 'all' ? $value->note : $value->wallet?->name);
                         }
+                        $response .= $this->formatText('%s'.PHP_EOL,'');
+                        $response .= $this->formatText('<b>%s : Rp. %s </b>'.PHP_EOL,"Total {$type}", number_format($transactions->sum('amount'),0,'.','.'));
                         $this->sendMessage($chatId,  $response);
                         break;
                     }
@@ -203,6 +236,9 @@ class BotTelegramController extends Controller
                 $this->setWebhook();
                 $this->sendMessage($chatId,  $this->unicodeToUtf8($success, ' reload success'));
 
+                break;
+            case '/user':
+                $this->sendMessage($chatId,  $this->formatText('%s'.PHP_EOL, $command));
                 break;
             default:
                 $this->sendMessage($chatId,  $this->unicodeToUtf8($failed, ' Ups Command tidak ada'));
@@ -251,6 +287,12 @@ class BotTelegramController extends Controller
 
     public function getTransaction($wallet_ids, $date, $tipe)
     {
-        return Transaction::whereIn('wallet_id', $wallet_ids)->whereDate('created_at', $date)->where('type', $tipe)->get();
+        $query = Transaction::whereIn('wallet_id', $wallet_ids)->where('type', $tipe);
+
+        if(Str::slug($date,' ') != 'all'){
+            $query->whereDate('created_at', $date);
+        }
+
+        return $query->orderbyDesc('created_at')->get();
     }
 }
