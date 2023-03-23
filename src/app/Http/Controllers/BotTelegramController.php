@@ -25,7 +25,7 @@ class BotTelegramController extends Controller
     {
         $webhook =  Telegram::commandsHandler(true);
 
-        $getUserGroup = $webhook->getMessage()->from->username;
+        $getUserGroup = $webhook->getMessage()->from?->username;
         $command = $webhook->getChat();
         $getText = $webhook->getMessage()->getText();
         $chatId = $command->getId();
@@ -287,12 +287,6 @@ class BotTelegramController extends Controller
 
     public function getTransaction($wallet_ids, $date, $tipe)
     {
-        $query = Transaction::whereIn('wallet_id', $wallet_ids)->where('type', $tipe);
-
-        if(Str::slug($date,' ') != 'all'){
-            $query->whereDate('created_at', $date);
-        }
-
-        return $query->orderbyDesc('created_at')->get();
+        return Transaction::whereIn('wallet_id', $wallet_ids)->whereDate('created_at', $date)->where('type', $tipe)->orderbyDesc('created_at')->get();
     }
 }
