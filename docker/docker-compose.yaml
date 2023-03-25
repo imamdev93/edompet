@@ -15,13 +15,11 @@ services:
     image: mysql:latest
     container_name: mysql
     platform: linux/x86_64
+    restart: unless-stopped
     tty: true
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
-      SERVICE_NAME: mysql
     ports:
       - "3306:3306"
     volumes:
