@@ -33,11 +33,11 @@ class Transfer extends Model
         parent::boot();
 
         static::creating(function (Transfer $transfer) {
-            $transfer->created_by = auth()->user()->id;
+            $transfer->created_by = auth()->user()->id ?? User::first()->id;
         });
 
         static::updating(function (Transfer $transfer) {
-            $transfer->updated_by = auth()->user()->id;
+            $transfer->updated_by = auth()->user()->id ?? User::first()->id;
         });
     }
 }
