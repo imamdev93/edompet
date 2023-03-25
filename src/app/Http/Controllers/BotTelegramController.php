@@ -27,25 +27,18 @@ class BotTelegramController extends Controller
     {
         $webhook =  Telegram::commandsHandler(true);
 
-        $getUserGroup = $webhook->getMessage()->from?->username;
         $command = $webhook->getChat();
         $getText = $webhook->getMessage()->getText();
         $chatId = $command->getId();
-        $username = $command->getUsername();
+        $username = $webhook->getMessage()->from->username;
         $getCommand = explode(' ', $getText);
         $failed = '\u274c';
-
-        $group = $command->type;
-
-        if($group == 'group'){
-            $username = $getUserGroup;
-        }
 
         $user = User::where('username', $username)->first();
         if(!$user){
             $this->sendMessage($chatId, $this->unicodeToUtf8($failed,' User tidak terdaftar'));
         }else{
-            $this->authenticate($chatId, $getCommand, $getText, $getUserGroup);
+            $this->authenticate($chatId, $getCommand, $getText, $username);
         }
     }
 
@@ -250,11 +243,12 @@ class BotTelegramController extends Controller
             case '/reload':
                 $this->setWebhook();
                 $this->sendMessage($chatId,  $this->unicodeToUtf8($success, ' reload success'));
+                break;
             case '/transfer':
                 $replyMessage = explode('#', $text);
 
                 if (empty($replyMessage[1])) {
-                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Format Transaksi salah. /transfer #dompet asal #dompet tujuan #jumlah uang #catatan'));
+                    $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Format Transfer salah. /transfer #dompet asal #dompet tujuan #jumlah uang #catatan'));
                     break;
                 }
 
