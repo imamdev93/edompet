@@ -150,7 +150,7 @@ class BotTelegramController extends Controller
 
                 $wallet = $this->getWallet(array(trim($replyMessage[1])));
 
-                if (!$wallet) {
+                if (count($wallet) == 0) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
                     break;
                 }
@@ -231,7 +231,7 @@ class BotTelegramController extends Controller
 
                 $wallet = $this->getWallet(array(trim($replyMessage[1])));
 
-                if (!$wallet) {
+                if (count($wallet) == 0) {
                     $this->sendMessage($chatId, $this->unicodeToUtf8($failed, ' Dompet tidak terdaftar'));
                     break;
                 }
