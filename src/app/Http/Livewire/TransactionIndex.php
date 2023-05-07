@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ class TransactionIndex extends Component
     public $wallet_id;
     public $start_date;
     public $end_date;
+    public $category_id;
 
     public function getTransactionsProperty()
     {
@@ -33,6 +35,10 @@ class TransactionIndex extends Component
             })
                 ->orWhere('note', 'like', '%' . $this->search . '%')
                 ->orWhere('amount', $this->search);
+        })->when($this->category_id, function ($query) {
+            $query->whereHas('categories', function ($q) {
+                $q->where('categories.id', $this->category_id);
+            });
         })->when($this->type, function ($query) {
             $query->where('type', $this->type);
         })->when($this->wallet_id, function ($query) {
@@ -67,6 +73,11 @@ class TransactionIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingCategoryId()
+    {
+        $this->resetPage();
+    }
+
     public function resetFilter()
     {
         $this->search = '';
@@ -74,13 +85,15 @@ class TransactionIndex extends Component
         $this->wallet_id = '';
         $this->start_date = '';
         $this->end_date = '';
+        $this->category_id = '';
     }
 
     public function render()
     {
         return view('livewire.transaction-index', [
             'transactions' => $this->transactions,
-            'wallets' => Wallet::get()
+            'wallets' => Wallet::get(),
+            'categories' => Category::get()
         ]);
     }
 }

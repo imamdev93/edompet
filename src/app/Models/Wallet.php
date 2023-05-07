@@ -33,6 +33,13 @@ class Wallet extends Model
         return $this->historyByType($type)->$condition('created_at', $date);
     }
 
+    public function historyMonth($type, $date = null)
+    {
+        $month = $date ?? date('m');
+        $year = $date ?? date('Y');
+        return $this->historyByType($type)->whereMonth('created_at', $month)->whereYear('created_at', $year);
+    }
+
     public function transactions()
     {
         return $this->hasMany(Transaction::class);

@@ -21,11 +21,19 @@
     </div>
     <div class="ibox-content table-responsive">
         <div class="row mb-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <select wire:model.lazy="wallet_id" class="form-control">
                     <option value="">Semua Dompet</option>
                     @foreach ($wallets as $wallet)
                         <option value="{{ $wallet->id }}">{{ $wallet->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select wire:model.lazy="category_id" class="form-control">
+                    <option value="">Semua Kategori</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -42,7 +50,7 @@
             <div class="col-md-2">
                 <input type="date" class="form-control" wire:model.lazy="end_date">
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <button wire:click="resetFilter" class="btn btn-danger">Reset</button>
             </div>
         </div>
