@@ -27,7 +27,7 @@ class WalletDetail extends Component
                 ->orWhere('amount', $this->search)
                 ->orWhere('note', 'like', '%' . $this->search . '%')
                 ->orWhereDate('created_at', $this->search);
-        })->where('wallet_id', $this->wallet->id)->paginate(10);
+        })->where('wallet_id', $this->wallet->id)->orderByDesc('created_at')->paginate(10);
     }
 
     public function render()
