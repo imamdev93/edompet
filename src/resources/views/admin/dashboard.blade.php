@@ -148,7 +148,7 @@
     <script>
         $('#select-transaksi').change(function() {
             var val = $(this).val();
-            window.location.href = '/admin/dashboard?transaksi=' + val
+            window.location.href = '/e-dompet/dashboard?transaksi=' + val
         })
         var options = {
             series: {!! json_encode($value) !!},
