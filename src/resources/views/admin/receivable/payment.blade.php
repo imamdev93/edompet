@@ -14,7 +14,7 @@
                 <div class="form-group row">
                     <label class="col-lg-2 col-form-label">Hutang</label>
                     <div class="col-lg-10">
-                        <select name="receivable_id" id="" class="form-control">
+                        <select name="receivable_id" id="" class="select2_demo_3 form-control">
                             <option value="">Pilih</option>
                             @foreach ($receivableExists as $receivable)
                                 <option value="{{$receivable->id}}" {{ old('receivable_id') == $receivable->id ? 'selected' : ''}}>{{ $receivable->title }}</option>
@@ -23,6 +23,21 @@
                         </select>
                         @error('receivable_id')
                             <span class="form-text m-b-none text-danger">{{ $errors->first('receivable_id') }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-lg-2 col-form-label">Dompet</label>
+                    <div class="col-lg-10">
+                        <select name="wallet_id" id="" class="select2_demo_3 form-control">
+                            <option value="">Pilih</option>
+                            @foreach ($wallets as $wallet)
+                                <option value="{{$wallet->id}}" {{ old('wallet_id') == $wallet->id ? 'selected' : ''}}>{{ $wallet->name }}</option>
+                            @endforeach
+
+                        </select>
+                        @error('wallet_id')
+                            <span class="form-text m-b-none text-danger">{{ $errors->first('wallet_id') }}</span>
                         @enderror
                     </div>
                 </div>

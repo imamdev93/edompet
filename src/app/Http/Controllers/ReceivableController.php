@@ -111,13 +111,16 @@ class ReceivableController extends Controller
     {
         DB::beginTransaction();
         try {
+            $wallet = $request->wallet_id ?? Receivable::find($request->receivable_id)?->wallet_id;
+
             $payment = ReceivableHistory::create($request->except('payment_amount') + [
-                'amount' => $request->payment_amount
+                'amount' => $request->payment_amount,
+                'wallet_id' => $wallet
             ]);
 
             $payment->receivable->decrement('amount', $payment->amount);
 
-            $this->updateWalletBalance($payment->receivable->wallet, $payment->amount, TypeStatusEnum::pemasukan(), $payment->note);
+            $this->updateWalletBalance($payment->wallet, $payment->amount, TypeStatusEnum::pemasukan(), $payment->note);
 
             DB::commit();
 

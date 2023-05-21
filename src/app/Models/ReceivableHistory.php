@@ -11,6 +11,7 @@ class ReceivableHistory extends Model
 
     public $fillable = [
         'receivable_id',
+        'wallet_id',
         'note',
         'amount',
     ];
@@ -18,5 +19,10 @@ class ReceivableHistory extends Model
     public function receivable()
     {
         return $this->belongsTo(Receivable::class);
+    }
+
+    public function wallet()
+    {
+        return $this->belongsTo(Wallet::class);
     }
 }
